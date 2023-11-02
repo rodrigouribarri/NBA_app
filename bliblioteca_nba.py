@@ -21,6 +21,10 @@ def imprimir_menu()->None:
         D. Mostrar promedio de puntos por partido del equipo
         E. Mostrar jugadores del salón de la fama
         F. Jugador con mas rebotes
+        G. Promedio de asistencias por partido de cada jugador
+        H. Guardar promedio asistencias en archivo CSV
+        I. Guardar promedio asistencias en archivo JSON
+        J. Guardar en la base de datos cada promedio de asistencias
         0. Salir	
         '''
     imprimir_dato(menu)
@@ -110,15 +114,15 @@ def optimizar_nombre(nombre:str):
 
 def pedir_desicion():
     desicion = input("¿Desea guardar las estadísticas?\nIngrese si o no: ")
-    while desicion.lower() != "si" or desicion.lower() != "no":
+    while desicion.lower() != "si" and desicion.lower() != "no":
         desicion = input("¿Desea guardar las estadísticas?\nIngrese si o no: ")
     return desicion.lower()
 
-def guardar_estadisticas_jugador(jugador:dict, desicion:str):
+def guardar_estadisticas_jugador(ruta:str,jugador:dict, desicion:str, nombre:str="Uribarri"):
     if  desicion == "si":
         try:
-            nombre = optimizar_nombre(jugador['nombre'])
-            ruta = f"{ROOT_DIR}estadisticas{nombre}.csv"
+            nombre = optimizar_nombre(nombre)
+            ruta += f"{nombre}.csv"
             equipo.crear_csv(ruta,jugador)
         except Exception as ex:
            print(f"No fue posible guardar el archivo {str(ex)} {ruta}")
@@ -268,12 +272,15 @@ def quick_sort(lista_jugadores:list[object]):
     pivot = jugador.estadisticas.promedio_asistencias_por_partido
     mas_grandes = []
     mas_chicos = []
+    iguales = [jugador]
     for jugador in lista_jugadores:
         if jugador.estadisticas.promedio_asistencias_por_partido > pivot:
             mas_grandes.append(jugador)
-        elif jugador.estadisticas.promedio_asistencias_por_partido <= pivot:
+        elif jugador.estadisticas.promedio_asistencias_por_partido < pivot:
             mas_chicos.append(jugador)
-    return quick_sort(mas_grandes) + [jugador] + quick_sort(mas_chicos)
+        else:
+            iguales.append(jugador)
+    return quick_sort(mas_grandes) + iguales + quick_sort(mas_chicos)
 
 def nba_imprimir_promedio_asistencias_y_jugadores(lista_jugadores:list[object]):
     lista_ordenada_asistencias = quick_sort(lista_jugadores)
@@ -282,7 +289,40 @@ def nba_imprimir_promedio_asistencias_y_jugadores(lista_jugadores:list[object]):
 
 #  Permitir guardar este listado ordenado en un archivo CSV con su
 # apellido.csv
+def crear_datos_promedio_asistencias_partido(lista_jugadores:list[object]):
+    lista_jugadores_ordenada = quick_sort(lista_jugadores)
+    jugador_diccionario = []
+    for jugador in lista_jugadores_ordenada:
+        jugador_diccionario.append({jugador.nombre : jugador.estadisticas.promedio_asistencias_por_partido})
+        
+    return jugador_diccionario
 
-    
+def nba_guardar_promedio_asistencias_db(ruta,jugadores:list[dict]):
+    equipo.eliminar_tabla_base_datos(ruta)
+    equipo.crear_tabla_base_datos(ruta)
+    equipo.agregar_a_base_datos(ruta, jugadores)
+
+def validar_nombre_archivo(nombre_ruta:str):
+    regex = r"^\w+\S*(-_\.)*\w$"
+    return True if re.match(regex,nombre_ruta) else False
+
+def pedir_nombre_ruta():
+    nombre_ruta = input("Ingrese del archivo: ")
+    while not validar_nombre_archivo(nombre_ruta):
+        nombre_ruta = input("Nombre incorrecto,caracteres especiales permitidos(. _ -)\nNo puede comenzar ó terminar con caracteres especiales\nIntente nuevamente: ")
+    return nombre_ruta
+
+def armar_ruta_json(path:str,nombre_archivo:str):
+    ruta = path + nombre_archivo + ".json"
+    return ruta
+
+def nba_crear_archivo_json(ruta:str, lista_jugadores:list[dict]):
+    equipo.crear_json(ruta,lista_jugadores)
+
+
+
+# nba_crear_archivo_json()
+# print(crear_datos_promedio_asistencias_partido(equipo.lista_jugadores))
+# nba_imprimir_promedio_asistencias_y_jugadores(equipo.lista_jugadores)
     
 

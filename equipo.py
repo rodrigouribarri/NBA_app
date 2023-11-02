@@ -1,4 +1,4 @@
-import json
+import json, sqlite3
 from jugador import Jugador
 from estadistica import Estadistica
 
@@ -39,38 +39,61 @@ class Equipo:
            print(str(ex))
 
 
-    # def crear_encabezado(self,jugador:dict):
-    #     texto = ""
-    #     for clave in jugador.keys():
-    #         primer_dato = True
-    #         if primer_dato:
-    #             texto += f"{clave}"
-    #             primer_dato = False
-    #         else:
-    #             texto += f", {clave}"
-    #     texto += "\n"
-    #     return texto
+    def crear_encabezado(self,jugador:dict):
+        texto = ""
+        for clave in jugador.keys():
+            texto += f"{clave}, "
+        texto += "\n"
+        return texto
     
     def crear_datos(self,jugador:dict):
         texto = ""
         for valor in jugador.values():
             texto += f"{valor}, "
             
-        auxiliar = (texto[:-1])
-        auxiliar += "\n"
-        return auxiliar
+        texto += "\n"
+        return texto
     
-    def crear_csv(self, path:str,jugador:dict):
-        #try:
-            with open(path, "w") as archivo:
-                texto = ""
-                # texto += self.crear_encabezado(jugador)
-                texto += self.crear_datos(jugador)
-                archivo.write(texto)
-                print("Archivo csv creado exitosamente")
-                    
-        #except Exception as ex:
-        #    print(f"El archivo csv no se pudo crear {str(ex)}")
+    def crear_json(self, ruta: str, lista_jugadores: list[dict]) -> None:
+        with open(ruta, "w", encoding="utf-8") as archivo_json:
+            contenido = [{"promedio_asistencias": lista_jugadores}]           
+            json.dump(contenido, archivo_json, indent=4)
+            print(f'Archivo creado en la ruta: {ruta}')
+
+    
+
+    def eliminar_tabla_base_datos(self, ruta):
+        with sqlite3.connect(ruta) as conexion:
+            try:
+                conexion.execute("drop table if exists promedio_asistencias_jugadores ")
+                conexion.commit()
+            except Exception as ex:
+                print("No fue posible eliminar la tabla")
+    
+    def crear_tabla_base_datos(self, ruta):
+        with sqlite3.connect(ruta) as conexion:
+            try:
+                sentencia = """create table if not exists promedio_asistencias_jugadores
+                            (id integer primary key autoincrement,
+                            nombre text,
+                            promedio_asistencias real)"""
+                conexion.execute(sentencia)
+                conexion.commit()
+            except Exception as ex:
+                print("No fue posible crear la tabla")
+
+    def agregar_a_base_datos(self, ruta, jugadores:list[dict]):
+        with sqlite3.connect(ruta) as conexion:
+            try:
+                for jugador in jugadores:
+                    for clave, valor in jugador.items():
+                        conexion.execute("insert into promedio_asistencias_jugadores(nombre, promedio_asistencias) values (?,?)",(clave, valor))
+                conexion.commit()
+                print("Datos agregados exitosamente")
+            except Exception as ex:
+                print(f"No fue posible agregar los datos {str(ex)}")
+
+                
    
 
 

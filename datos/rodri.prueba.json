@@ -1,0 +1,42 @@
+[
+    {
+        "promedio_asistencias": [
+            {
+                "Magic Johnson": 11.2
+            },
+            {
+                "John Stockton": 10.5
+            },
+            {
+                "Larry Bird": 6.3
+            },
+            {
+                "Clyde Drexler": 5.6
+            },
+            {
+                "Michael Jordan": 5.3
+            },
+            {
+                "Scottie Pippen": 5.2
+            },
+            {
+                "Charles Barkley": 3.9
+            },
+            {
+                "Karl Malone": 3.6
+            },
+            {
+                "Chris Mullin": 3.5
+            },
+            {
+                "David Robinson": 2.5
+            },
+            {
+                "Patrick Ewing": 2
+            },
+            {
+                "Christian Laettner": 1.3
+            }
+        ]
+    }
+]
