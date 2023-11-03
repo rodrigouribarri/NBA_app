@@ -14,6 +14,7 @@ def imprimir_dato(dato:str)->None:
     print(dato)
 
 def imprimir_menu()->None:
+    #Imprime el menú de la app
     menu ='''
         A. Listar con nombre y posición a todos los jugadores del Dream Team
         B. Seleccionar un jugador por su índice
@@ -25,6 +26,10 @@ def imprimir_menu()->None:
         H. Guardar promedio asistencias en archivo CSV
         I. Guardar promedio asistencias en archivo JSON
         J. Guardar en la base de datos cada promedio de asistencias
+        k. Listar nombre de forma descendente segun suma de robos y bloqueos
+        L. Listar nombre y porcentaje de forma descendente segun suma de robos y bloqueos
+        M. Indicar cantidad a listar de forma descendente segun suma de robos y bloqueos
+        N. Crear tabla en base de datos con las posiciones
         0. Salir	
         '''
     imprimir_dato(menu)
@@ -255,11 +260,6 @@ def obtener_nombre_y_rebotes(jugador:object):
 def nba_imprimir_nombre_jugador_mas_rebotes(mensaje:str):
     imprimir_dato(mensaje)
 
-# ) Según su último número del DNI, usar el campo que corresponda para
-# realizar los siguientes puntos
-#promedio_asistencias_por_partido
-# A) Ordenar el listado de manera descendente(el mayor arriba) y mostrar el
-# listado.
 
 def quick_sort(lista_jugadores:list[object]):
     #Recibe una lista de enteros
@@ -287,8 +287,7 @@ def nba_imprimir_promedio_asistencias_y_jugadores(lista_jugadores:list[object]):
     for jugador in lista_ordenada_asistencias:
         imprimir_dato(f"{jugador.nombre} {jugador.estadisticas.promedio_asistencias_por_partido}")
 
-#  Permitir guardar este listado ordenado en un archivo CSV con su
-# apellido.csv
+
 def crear_datos_promedio_asistencias_partido(lista_jugadores:list[object]):
     lista_jugadores_ordenada = quick_sort(lista_jugadores)
     jugador_diccionario = []
@@ -298,8 +297,12 @@ def crear_datos_promedio_asistencias_partido(lista_jugadores:list[object]):
     return jugador_diccionario
 
 def nba_guardar_promedio_asistencias_db(ruta,jugadores:list[dict]):
-    equipo.eliminar_tabla_base_datos(ruta)
-    equipo.crear_tabla_base_datos(ruta)
+    sentencia = """create table if not exists promedio_asistencias_jugadores
+                            (id integer primary key autoincrement,
+                            nombre text,
+                            promedio_asistencias real)"""
+    equipo.eliminar_tabla_base_datos(ruta, "promedio_asistencias_jugadores")
+    equipo.crear_tabla_base_datos(ruta, sentencia)
     equipo.agregar_a_base_datos(ruta, jugadores)
 
 def validar_nombre_archivo(nombre_ruta:str):
@@ -319,10 +322,51 @@ def armar_ruta_json(path:str,nombre_archivo:str):
 def nba_crear_archivo_json(ruta:str, lista_jugadores:list[dict]):
     equipo.crear_json(ruta,lista_jugadores)
 
-
-
-# nba_crear_archivo_json()
-# print(crear_datos_promedio_asistencias_partido(equipo.lista_jugadores))
-# nba_imprimir_promedio_asistencias_y_jugadores(equipo.lista_jugadores)
+def ordenar_robos_mas_bloqueos(lista_jugadores: list[object]):
+    if not lista_jugadores:
+        print("La lista está vacía")
+    else:
+        lista_copia = lista_jugadores.copy()
+        lista_copia.sort(key=lambda jugador: jugador.estadisticas.robos_totales + jugador.estadisticas.bloqueos_totales, reverse=True)
+        return lista_copia
     
+def mostrar_cantidad_jugadores():
+    cantidad = input("¿Cuántos jugadores desea mostrar?: ")
+    validar_indice(cantidad)
+    return cantidad   
+
+def calcular_porcentaje(jugador:object,maximo):
+    suma = jugador.estadisticas.robos_totales + jugador.estadisticas.bloqueos_totales
+    porcentaje = (suma*100)/maximo
+    return round(porcentaje,2)
+
+def nba_listar_por_robos_mas_bloqueos(lista_jugadores:list[object],con_datos:bool=False,cantidad:bool=False):
+    lista_ordenada = ordenar_robos_mas_bloqueos(lista_jugadores)
+    if cantidad and not con_datos:
+        numero_ingresado = int(mostrar_cantidad_jugadores())
+        lista_cortada =  lista_ordenada[:numero_ingresado]
+        for jugador in lista_cortada:
+            imprimir_dato(jugador.nombre)
+    elif con_datos and not cantidad:
+        for jugador in lista_ordenada:
+            maximo = lista_ordenada[0].estadisticas.robos_totales + lista_ordenada[0].estadisticas.bloqueos_totales
+            imprimir_dato(f"{jugador.nombre} {calcular_porcentaje(jugador,maximo)} %")
+    elif not con_datos and not cantidad:
+        for jugador in lista_ordenada:
+            imprimir_dato(f"{jugador.nombre} {jugador.estadisticas.robos_totales + jugador.estadisticas.bloqueos_totales}")
+
+def obtener_posiciones(lista_jugadores:list[object]):
+    lista_posiciones=[]
+    for jugador in lista_jugadores:
+        if not jugador.posicion in lista_posiciones:
+            lista_posiciones.append(jugador.posicion)
+
+    return lista_posiciones
+
+def nba_crear_posiciones(ruta,lista_posiciones:list):
+    sentencia ="""create table if not exists posiciones (id integer primary key autoincrement, 
+                                                        posicion text)"""
+    equipo.eliminar_tabla_base_datos(ruta,"posiciones")
+    equipo.crear_tabla_base_datos(ruta,sentencia)
+    equipo.agregar_posiciones_a_tabla(ruta,lista_posiciones)
 

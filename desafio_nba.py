@@ -1,5 +1,4 @@
 from bliblioteca_nba import *
-# ROOT_DIR,limpiar_consola, nba_menu_principal, nba_imprimir_nombre_y_posicion, nba_imprimir_estadisticas_jugador_elegido,buscar_jugador_en_lista,pedir_jugador, guardar_estadisticas_jugador, obtener_datos_jugador_elegido, buscar_jugador, nba_imprimir_logros, obtener_nombre_y_rebotes,calcular_indice_jugador_mas_rebotes,nba_imprimir_nombre_jugador_mas_rebotes,evaluar_si_es_miembro_salon_fama,nba_imprimir_si_es_miembro_o_no,calcular_promedio_puntos,nombres_ordenados_por_promedio_puntos,nba_imprimir_promedio_puntos_y_jugadores, nba_imprimir_promedio_asistencias_y_jugadores, quick_sort,pedir_desicion,crear_datos_promedio_asistencias_partido, nba_guardar_promedio_asistencias_db, nba_crear_archivo_json, armar_ruta_json
 
 
 jugador_elegido = {}
@@ -31,6 +30,14 @@ def nba_app(lista_jugadores:list[object]):
                 nba_crear_archivo_json(armar_ruta_json(ROOT_DIR,pedir_nombre_ruta()),crear_datos_promedio_asistencias_partido(lista_jugadores))
             case "J":
                 nba_guardar_promedio_asistencias_db(f"{ROOT_DIR}promedio_asistencias_nba.db",crear_datos_promedio_asistencias_partido(lista_jugadores))
+            case "K":
+                nba_listar_por_robos_mas_bloqueos(lista_jugadores)
+            case "L":
+                nba_listar_por_robos_mas_bloqueos(lista_jugadores,True)
+            case "M":
+                nba_listar_por_robos_mas_bloqueos(lista_jugadores,False,True)
+            case "N":
+                nba_crear_posiciones(f"{ROOT_DIR}posiciones_nba.db",obtener_posiciones(lista_jugadores))
             case "0":
                 break
             case _:

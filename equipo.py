@@ -60,23 +60,19 @@ class Equipo:
             json.dump(contenido, archivo_json, indent=4)
             print(f'Archivo creado en la ruta: {ruta}')
 
-    
 
-    def eliminar_tabla_base_datos(self, ruta):
+    def eliminar_tabla_base_datos(self, ruta, nombre):
         with sqlite3.connect(ruta) as conexion:
             try:
-                conexion.execute("drop table if exists promedio_asistencias_jugadores ")
+                conexion.execute(f"drop table if exists {nombre}")
                 conexion.commit()
             except Exception as ex:
                 print("No fue posible eliminar la tabla")
+
     
-    def crear_tabla_base_datos(self, ruta):
+    def crear_tabla_base_datos(self, ruta, sentencia:str):
         with sqlite3.connect(ruta) as conexion:
             try:
-                sentencia = """create table if not exists promedio_asistencias_jugadores
-                            (id integer primary key autoincrement,
-                            nombre text,
-                            promedio_asistencias real)"""
                 conexion.execute(sentencia)
                 conexion.commit()
             except Exception as ex:
@@ -92,12 +88,14 @@ class Equipo:
                 print("Datos agregados exitosamente")
             except Exception as ex:
                 print(f"No fue posible agregar los datos {str(ex)}")
+    
 
-                
-   
-
-
-
-
-
-
+    def agregar_posiciones_a_tabla(self, ruta,lista_posiciones:list):
+        with sqlite3.connect(ruta) as conexion:
+            try:
+                for posicion in lista_posiciones:
+                    conexion.execute("insert into posiciones(posicion) values(?)",(posicion,))
+                conexion.commit()
+                print(f"Agregados exitosamente")
+            except Exception as ex:
+                print(f"No fue posible agregar a la base de datos\n {str(ex)}")
